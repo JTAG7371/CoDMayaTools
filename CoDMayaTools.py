@@ -45,7 +45,6 @@ import maya.OpenMayaAnim as OpenMayaAnim
 import socket
 import subprocess
 import webbrowser
-import queue
 import winreg as reg
 import time
 import struct
@@ -53,6 +52,7 @@ import shutil
 import zipfile
 import re
 import json
+import queue
 from importlib import reload
 from PyCoD import xmodel as xModel
 from PyCoD import xanim as xAnim
@@ -358,7 +358,7 @@ def ImportXAnim(game):
         joints = []
         for i in range(numJoints):
             joints.append(ReadNullTerminatedString(f))
-        print (joints)
+        print(joints)
 
         # Read joint frame data
         for i in range(numJoints):
@@ -369,7 +369,7 @@ def ImportXAnim(game):
             numPositions = struct.unpack('<H', f.read(2))[0]
             for j in range(numPositions):
                 pos = struct.unpack('<fff', f.read(12))
-                print (pos)
+                print(pos)
 
 
 
@@ -1516,7 +1516,7 @@ def ExportMeshData(joints, xmodel, merge_mesh = True):
                 continue
             # Loop indices
             # vertexIndices.length() has 3 values per triangle
-            for i in range(len(triangleIndices)//3):
+            for i in range(triangleIndices.length() // 3):
                 # New xModel Face
                 xface = xModel.Face(0 if merge_mesh else len(meshes)-1 , materialDict[polyMaterial[0]])
                 # Put local indices into an array for easy access
@@ -1956,12 +1956,12 @@ def CreateNewGunsleeveMayaFile():
     cmds.deleteUI(progressWindow, window=True)
 
     # Handle response
-    if type(response) == str:
+    if type(response) == str or type(response) == bytes:
         MessageBox(response)
     elif WarningsDuringExport > 0:
         MessageBox("Warnings occurred during export. Check the script editor output for more details.")
 
-    if type(response) != str:
+    if type(response) != str and type(response) != unicode:
         MessageBox("Export saved to\n\n" + os.path.normpath(exportPath))
 
 def CreateNewViewmodelRigFile():
@@ -2859,8 +2859,7 @@ def GeneralWindow_ExportSelected(windowID, exportingMultiple):
     cmds.deleteUI(progressWindow, window=True)
 
     # Handle response
-
-    if type(response) == str:
+    if type(response) == str or type(response) == bytes:
         if exportingMultiple:
             MessageBox("Slot %i\n\n%s" % (slotIndex, response))
         else:
@@ -2890,7 +2889,7 @@ def GeneralWindow_ExportMultiple(windowID):
     for i in range(1, EXPORT_WINDOW_NUMSLOTS+1):
         useInMultiExport = cmds.getAttr(OBJECT_NAMES[windowID][2]+(".useinmultiexport[%i]" % i))
         if useInMultiExport:
-            print ("Exporting slot %i in multiexport" % i)
+            print("Exporting slot %i in multiexport" % i)
             cmds.optionMenu(OBJECT_NAMES[windowID][0]+"_SlotDropDown", edit=True, select=i)
             exec(OBJECT_NAMES[windowID][3] + "()") # Refresh window
             if GeneralWindow_GetSavedSelection(windowID):
@@ -3144,8 +3143,8 @@ def GenerateCamAnim(reqarg=""):
         GunRot[1] = GunRot[1] * 0.025
         GunRot[2] = jointGun[2]
         GunRot[2] = GunRot[2] * 0.025
-        print (GunRot)
-        print (jointGun)
+        print(GunRot)
+        print(jointGun)
         cmds.select(getObjectByAlias("camera"), replace=True)
         # cmds.rotate(GunRot[0], GunRot[1], GunRot[2], rotateXYZ=True)
         cmds.setKeyframe(v=(GunMoveX-GunMoveXorig),at='translateX')
@@ -3157,10 +3156,10 @@ def GenerateCamAnim(reqarg=""):
 
 def RemoveCameraKeys(reqarg=""):
     if (cmds.objExists(getObjectByAlias("camera")) == False):
-        print ("ERROR: Camera doesn't exist")
+        print("ERROR: Camera doesn't exist")
         return
     else:
-        print ("Camera exists!")
+        print("Camera exists!")
         jointCamera = cmds.joint(getObjectByAlias("camera"), query=True)
     animStart = cmds.playbackOptions(query=True, minTime=True)
     animEnd = cmds.playbackOptions(query=True, maxTime=True)
@@ -3216,7 +3215,7 @@ def getObjectByAlias(aname):
 # Bind the weapon to hands
 def WeaponBinder():
     # Call of Duty specific
-    for x in xrange(0, len(GUN_BASE_TAGS)):
+    for x in range(0, len(GUN_BASE_TAGS)):
         try:
             # Select both tags and parent them
             cmds.select(GUN_BASE_TAGS[x], replace = True)
