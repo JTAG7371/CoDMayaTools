@@ -53,6 +53,7 @@ import zipfile
 import re
 import json
 import queue
+from importlib import reload
 from PyCoD import xmodel as xModel
 from PyCoD import xanim as xAnim
 from array import array
@@ -204,7 +205,7 @@ def CreateMenu():
     cmds.setParent(menu, menu=True)
     cmds.menuItem(divider=True)
     # For easy script updating
-    cmds.menuItem(label="Reload Script", command="reload(CoDMayaTools)")
+    cmds.menuItem(label="Reload Script", command=lambda x:reload(sys.modules[__name__]))
 
     # Tools Info
     cmds.menuItem(label="About", command=lambda x:AboutWindow())
@@ -289,7 +290,7 @@ def ReadNullTerminatedString(f):
     byte = f.read(1)
     string = ""
     while struct.unpack('B', byte)[0] != 0:
-        string += byte
+        string += byte.decode()
         byte = f.read(1)
 
     return string
@@ -751,7 +752,7 @@ def LoadMaterials(lod, codRootPath):
 
                 # Extract from zip
                 source = zip.open("images/%s%s" % (mapName, ".iwi"))
-                target = file(outPath, "wb")
+                target = open(outPath, "wb")
                 shutil.copyfileobj(source, target)
                 source.close()
                 target.close()
